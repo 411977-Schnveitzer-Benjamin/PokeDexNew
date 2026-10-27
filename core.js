@@ -155,11 +155,13 @@
   // ==========================================
   // DATOS
   // ==========================================
-  const raw = window.POKEMON_RAW || [];
+  const raw = (window.POKEMON_RAW || []).concat(window.FORMS_RAW || []);
   const megaCount = {};
+  // m: 0 base | 1 mega | 2 mega Z-A | 3 Gigamax | 4 regional | 5 primigenia
+  PKX.FORM_LABELS = { 1: 'MEGA', 2: 'MEGA', 3: 'GIGAMAX', 4: 'REGIONAL', 5: 'PRIMIGENIA' };
   PKX.ALL = raw.map(r => {
-    const isMega = r.m > 0;
-    const idx = isMega ? (megaCount[r.i] = (megaCount[r.i] || 0) + 1) : 0;
+    const isMega = r.m === 1 || r.m === 2;
+    const idx = r.m > 0 ? (megaCount[r.i] = (megaCount[r.i] || 0) + 1) : 0;
     const s = r.s;
     return {
       uid: r.u, id: r.i, gen: r.g, name: r.n, category: r.c, description: r.d,
@@ -167,7 +169,11 @@
       abilities: r.a.map(a => ({ slug: a[0], hidden: !!a[1] })),
       statsArr: s,
       stats: { hp: s[0], attack: s[1], defense: s[2], spAttack: s[3], spDefense: s[4], speed: s[5], total: s.reduce((a, b) => a + b, 0) },
-      isMega, isZA: r.m === 2, baseExp: r.be, ev: r.ev, x: r.x || null,
+      isMega, isZA: r.m === 2, formKind: r.m || 0, isForm: r.m > 0,
+      isGmax: r.m === 3, isRegional: r.m === 4, isPrimal: r.m === 5,
+      // Formas que no se eligen directamente en un equipo (se activan en combate con objeto/mecánica)
+      battleOnly: r.m === 1 || r.m === 2 || r.m === 3 || r.m === 5,
+      baseExp: r.be, ev: r.ev, x: r.x || null,
       order: r.i * 100 + idx,
       search: PKX.norm(r.n),
       artwork: `${SPRITES}other/official-artwork/${r.u}.png`,
@@ -179,11 +185,27 @@
   PKX.SPECIES = {}; // id de especie -> entrada base
   PKX.ALL.forEach(p => {
     PKX.BY_UID[p.uid] = p;
-    if (!p.isMega) PKX.SPECIES[p.id] = p;
+    if (!p.isForm) PKX.SPECIES[p.id] = p;
   });
   PKX.ALL.forEach(p => { p.base = PKX.SPECIES[p.id] || p; });
   PKX.ORDERED = PKX.ALL.slice().sort((a, b) => a.order - b.order);
   PKX.MEGA_TOTAL = PKX.ALL.filter(p => p.isMega).length;
+  PKX.FORMS_TOTAL = PKX.ALL.filter(p => p.isForm).length;
+
+  // Megapiedras / orbes: uid de la forma -> { n, en }
+  PKX.MEGA_STONES = window.MEGA_STONES || {};
+  PKX.stoneOf = p => PKX.MEGA_STONES[p.uid] || null;
+  // Objetos que activan una forma de este Pokémon base (ej: Charizard -> Charizardita X / Y)
+  PKX.stonesForSpecies = id => PKX.ALL
+    .filter(q => q.id === id && (q.isMega || q.isPrimal) && PKX.MEGA_STONES[q.uid])
+    .map(q => ({ form: q, stone: PKX.MEGA_STONES[q.uid] }));
+  // Dado un objeto equipado, devuelve la forma que activa (o null)
+  PKX.formFromItem = (id, item) => {
+    if (!item) return null;
+    const it = PKX.norm(item);
+    const hit = PKX.stonesForSpecies(id).find(s => it.includes(PKX.norm(s.stone.n)) || it.includes(PKX.norm(s.stone.en)));
+    return hit ? hit.form : null;
+  };
 
   PKX.abilityInfo = slug => (window.ABILITIES || {})[slug] || { n: slug, d: '' };
   PKX.kind = p => (p.base.x ? p.base.x.k : 0);
@@ -192,8 +214,17 @@
   PKX.artworkOf = (p, shiny) => (shiny ? p.shinyArtwork : p.artwork);
 
   PKX.descriptionOf = function (p) {
-    if (!p.isMega) return p.description;
+    if (!p.isForm) return p.description;
     const b = p.base;
+    if (!p.isMega) {
+      const ab0 = p.abilities.map(a => PKX.abilityInfo(a.slug).n).join(' / ');
+      let t0;
+      if (p.isGmax) t0 = `Forma Gigamax de ${b.name}, alcanzada al dinamaxizarse en la región de Galar. Adquiere un aspecto colosal y accede a sus exclusivos movimientos G-Max.`;
+      else if (p.isPrimal) t0 = `Regresión Primigenia de ${b.name}, que recupera su poder ancestral al sostener el ${(PKX.stoneOf(p) || {}).n || 'orbe'}. Sus estadísticas totales pasan de ${b.stats.total} a ${p.stats.total}.`;
+      else t0 = `Variante regional de ${b.name} (${p.name.replace(b.name, '').trim()}), adaptada al entorno de su región con un aspecto y estadísticas propias (total ${p.stats.total}).`;
+      if (p.types.join() !== b.types.join()) t0 += ` Su tipo es ${p.types.map(t => PKX.TYPE_NAMES[t]).join('/')}.`;
+      return `${t0} Habilidades: ${ab0}.`;
+    }
     const ab = p.abilities.map(a => PKX.abilityInfo(a.slug).n).join(' / ');
     let txt = `Forma Megaevolucionada de ${b.name}. Sus estadísticas totales pasan de ${b.stats.total} a ${p.stats.total}`;
     if (p.types.join() !== b.types.join()) txt += ` y su tipo cambia a ${p.types.map(t => PKX.TYPE_NAMES[t]).join('/')}`;
@@ -212,7 +243,18 @@
     try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* noop */ }
   }
 
-  PKX.createDefaultMember = function (uid) {
+  // Una forma de combate (Mega, Gigamax, Primigenia) no se elige directamente:
+  // se usa el Pokémon base y, si corresponde, se le equipa la megapiedra / orbe.
+  PKX.resolveTeamForm = function (uid) {
+    const p = PKX.BY_UID[uid];
+    if (!p || !p.battleOnly) return { uid, item: '' };
+    const stone = PKX.stoneOf(p);
+    return { uid: p.base.uid, item: stone ? stone.n : '' };
+  };
+
+  PKX.createDefaultMember = function (uidIn) {
+    const resolved = PKX.resolveTeamForm(uidIn);
+    const uid = resolved.uid;
     const p = PKX.BY_UID[uid];
     const firstAb = (p && p.abilities && p.abilities[0] && p.abilities[0].slug) || '';
     // Auto populate up to 4 moves from learnset if available
@@ -233,7 +275,7 @@
     return {
       uid: uid,
       level: 50,
-      item: '',
+      item: resolved.item,
       ability: firstAb,
       nature: 0, // Fuerte (neutra)
       moves: moves, // up to 4 move IDs
@@ -264,6 +306,16 @@
       ];
       save('pokedex_teams', savedTeams);
     }
+    // Migración: miembros guardados como Mega/Gigamax pasan a su forma base + piedra
+    savedTeams.forEach(t => (t.members || []).forEach(m => {
+      const p = PKX.BY_UID[m.uid];
+      if (!p || !p.battleOnly) return;
+      const r = PKX.resolveTeamForm(m.uid);
+      m.uid = r.uid;
+      if (!m.item) m.item = r.item;
+      const base = PKX.BY_UID[r.uid];
+      if (base && !base.abilities.some(a => a.slug === m.ability)) m.ability = base.abilities[0].slug;
+    }));
     return savedTeams;
   }
 
@@ -374,7 +426,7 @@
       team.members.push(newMember);
     }
     PKX.saveTeams();
-    PKX.toast(`${PKX.BY_UID[uid].name} asignado al espacio ${slotIndex + 1}`);
+    PKX.toast(`${PKX.BY_UID[newMember.uid].name}${newMember.item ? ' @ ' + newMember.item : ''} asignado al espacio ${slotIndex + 1}`);
   };
 
   PKX.teamRemoveSlot = slotIndex => {
@@ -392,9 +444,10 @@
     PKX.saveTeams();
   };
 
-  PKX.teamAdd = uid => {
+  PKX.teamAdd = uidIn => {
     const team = PKX.getActiveTeam();
     if (!team) return false;
+    const uid = PKX.resolveTeamForm(uidIn).uid;
     if (team.members.some(m => m.uid === uid)) {
       PKX.toast('Ya está en este equipo');
       return false;
@@ -403,9 +456,10 @@
       PKX.toast('El equipo ya tiene 6 Pokémon');
       return false;
     }
-    team.members.push(PKX.createDefaultMember(uid));
+    const nm = PKX.createDefaultMember(uidIn);
+    team.members.push(nm);
     PKX.saveTeams();
-    PKX.toast(`${PKX.BY_UID[uid].name} se unió a "${team.name}"`);
+    PKX.toast(`${PKX.BY_UID[uid].name}${nm.item ? ' @ ' + nm.item : ''} se unió a "${team.name}"`);
     return true;
   };
 
@@ -579,11 +633,30 @@
       if (parenMatch) speciesName = parenMatch[1].trim();
 
       const cleanName = PKX.norm(speciesName);
+      const compact = s => PKX.norm(s).replace(/[^a-z0-9]/g, '');
       let foundPkm = PKX.ORDERED.find(p => PKX.norm(p.name) === cleanName);
       if (!foundPkm) {
-        foundPkm = PKX.ORDERED.find(p => PKX.norm(p.name).replace(/[^a-z0-9]/g, '') === cleanName.replace(/[^a-z0-9]/g, ''));
+        foundPkm = PKX.ORDERED.find(p => compact(p.name) === compact(speciesName));
+      }
+      // Formato Showdown de formas de combate: "Charizard-Mega-X", "Kyogre-Primal", "Snorlax-Gmax"
+      if (!foundPkm) {
+        const fm = speciesName.match(/^(.+?)-(Mega(?:-[XYZ])?|Primal|Gmax)$/i);
+        if (fm) {
+          const base = PKX.ORDERED.find(p => !p.isForm && compact(p.name) === compact(fm[1]));
+          if (base) {
+            const suf = (fm[2].split('-')[1] || '').toUpperCase();
+            const kind = fm[2].toLowerCase().split('-')[0];
+            foundPkm = PKX.ALL.find(q => q.id === base.id && (kind === 'mega' ? q.isMega && (suf ? q.name.endsWith(' ' + suf) : !/ [XYZ]$/.test(q.name)) : kind === 'primal' ? q.isPrimal : q.isGmax)) || base;
+          }
+        }
       }
       if (!foundPkm) continue;
+      // Las formas de combate se guardan como base + megapiedra/orbe
+      if (foundPkm.battleOnly) {
+        const r = PKX.resolveTeamForm(foundPkm.uid);
+        if (!item) item = r.item;
+        foundPkm = PKX.BY_UID[r.uid];
+      }
 
       let level = 100;
       let shiny = false;
@@ -717,7 +790,7 @@
     function render() {
       const q = PKX.norm(input.value.trim().replace('#', ''));
       if (!q) { box.hidden = true; return; }
-      const res = PKX.ORDERED.filter(p => p.search.includes(q) || String(p.id) === q || String(p.id).padStart(3, '0').startsWith(q)).slice(0, 8);
+      const res = PKX.ORDERED.filter(p => !(opts.teamMode && p.battleOnly) && (p.search.includes(q) || String(p.id) === q || String(p.id).padStart(3, '0').startsWith(q))).slice(0, 8);
       box.innerHTML = res.length
         ? res.map(p => `
           <button type="button" class="picker-item" data-uid="${p.uid}">
@@ -756,8 +829,21 @@
             <h3 class="modal-title-clean">Elegir Pokémon para el Equipo</h3>
             <button class="modal-icon-btn close-icon-btn" id="slot-picker-close">✕</button>
           </div>
-          <div class="slot-picker-search-bar">
+          <div class="slot-picker-search-bar" style="margin:0.8rem 0 0.4rem;">
             <input type="text" id="slot-picker-input" placeholder="Buscar por nombre o número (ej. Gengar, #094, Lucario)…" autocomplete="off">
+          </div>
+          <div class="slot-picker-filter-chips" id="slot-picker-chips">
+            <button type="button" class="sp-chip active" data-sp-gen="0">Todas (1-IX)</button>
+            <button type="button" class="sp-chip" data-sp-gen="1">Gen I (Kanto)</button>
+            <button type="button" class="sp-chip" data-sp-gen="2">Gen II (Johto)</button>
+            <button type="button" class="sp-chip" data-sp-gen="3">Gen III (Hoenn)</button>
+            <button type="button" class="sp-chip" data-sp-gen="4">Gen IV (Sinnoh)</button>
+            <button type="button" class="sp-chip" data-sp-gen="5">Gen V (Teselia)</button>
+            <button type="button" class="sp-chip" data-sp-gen="6">Gen VI (Kalos)</button>
+            <button type="button" class="sp-chip" data-sp-gen="7">Gen VII (Alola)</button>
+            <button type="button" class="sp-chip" data-sp-gen="8">Gen VIII (Galar)</button>
+            <button type="button" class="sp-chip" data-sp-gen="9">Gen IX (Paldea)</button>
+            <button type="button" class="sp-chip" data-sp-gen="regional">🗺️ Regionales</button>
           </div>
           <div class="slot-picker-grid" id="slot-picker-grid"></div>
         </div>`;
@@ -770,24 +856,83 @@
 
     const input = modal.querySelector('#slot-picker-input');
     const grid = modal.querySelector('#slot-picker-grid');
+    const chipsWrap = modal.querySelector('#slot-picker-chips');
     input.value = '';
+    let selectedGen = '0';
+    let currentEntries = [];
+    let visibleCount = 80;
 
-    function renderGrid(query = '') {
-      const q = PKX.norm(query.trim().replace('#', ''));
-      const list = q
-        ? PKX.ORDERED.filter(p => p.search.includes(q) || String(p.id) === q || String(p.id).padStart(3, '0').startsWith(q)).slice(0, 48)
-        : PKX.ORDERED.slice(0, 48);
+    chipsWrap.querySelectorAll('.sp-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.spGen === '0');
+    });
 
-      grid.innerHTML = list.map(p => `
-        <button type="button" class="slot-pick-item" data-uid="${p.uid}" style="--c:${PKX.TYPE_COLORS[p.types[0]]}">
+    chipsWrap.onclick = e => {
+      const btn = e.target.closest('.sp-chip');
+      if (!btn) return;
+      chipsWrap.querySelectorAll('.sp-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      selectedGen = btn.dataset.spGen;
+      visibleCount = 80;
+      updateEntries();
+    };
+
+    function renderItemHTML({ p, item, via }) {
+      return `
+        <button type="button" class="slot-pick-item ${via ? 'with-stone' : ''}" data-uid="${via ? via.uid : p.uid}" style="--c:${PKX.TYPE_COLORS[p.types[0]]}" title="${via ? `${p.name} con ${item} (megaevoluciona en combate)` : p.name}">
           <img src="${p.sprite}" alt="${p.name}" loading="lazy" onerror="this.style.visibility='hidden'">
           <span class="spi-name">${p.name}</span>
-          <span class="spi-id">${PKX.pad(p.id)}</span>
-        </button>`).join('');
+          <span class="spi-id">${via ? `💎 ${PKX.esc(item)}` : PKX.pad(p.id)}</span>
+        </button>`;
     }
 
-    renderGrid();
-    input.oninput = () => renderGrid(input.value);
+    function updateEntries() {
+      const q = PKX.norm(input.value.trim().replace('#', ''));
+      const match = p => !q || p.search.includes(q) || String(p.id) === q || String(p.id).padStart(3, '0').startsWith(q);
+      
+      let pool = PKX.ORDERED.filter(p => !p.battleOnly);
+      if (selectedGen === 'regional') {
+        pool = pool.filter(p => p.isRegional);
+      } else if (selectedGen !== '0') {
+        const gNum = +selectedGen;
+        pool = pool.filter(p => p.gen === gNum && !p.isRegional);
+      }
+      
+      currentEntries = pool.filter(match).map(p => ({ p, item: '' }));
+
+      // Si se busca explícitamente una Mega o Primigenia, se ofrece la especie base con la piedra
+      if (q) {
+        PKX.ORDERED.filter(p => (p.isMega || p.isPrimal) && p.search.includes(q)).forEach(f => {
+          const st = PKX.stoneOf(f);
+          if (st) currentEntries.push({ p: f.base, item: st.n, via: f });
+        });
+      }
+
+      grid.scrollTop = 0;
+      if (!currentEntries.length) {
+        grid.innerHTML = '<p class="muted" style="grid-column:1/-1;text-align:center;padding:2rem;">Sin resultados para esta búsqueda</p>';
+        return;
+      }
+
+      const chunk = currentEntries.slice(0, visibleCount);
+      grid.innerHTML = chunk.map(renderItemHTML).join('');
+    }
+
+    grid.onscroll = () => {
+      if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 160) {
+        if (visibleCount < currentEntries.length) {
+          const nextChunk = currentEntries.slice(visibleCount, visibleCount + 80);
+          visibleCount += 80;
+          const temp = document.createElement('div');
+          temp.innerHTML = nextChunk.map(renderItemHTML).join('');
+          while (temp.firstChild) {
+            grid.appendChild(temp.firstChild);
+          }
+        }
+      }
+    };
+
+    updateEntries();
+    input.oninput = () => { visibleCount = 80; updateEntries(); };
 
     grid.onclick = e => {
       const b = e.target.closest('.slot-pick-item');

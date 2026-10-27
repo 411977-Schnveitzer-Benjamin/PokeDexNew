@@ -1699,3 +1699,18 @@ body {
 .card-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 .modal-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 @media (max-width: 680px) { .modal-tags { justify-content: center; } }
+
+/* Legibilidad de selectores desplegables */
+select {
+  color-scheme: dark !important;
+  background-color: #121826 !important;
+  color: #f8fafc !important;
+}
+select option, select optgroup {
+  background-color: #121826 !important;
+  color: #f8fafc !important;
+}
+select option:checked {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}

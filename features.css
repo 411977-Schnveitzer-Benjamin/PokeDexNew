@@ -1076,14 +1076,16 @@
 
 /* Slot Picker Modal (Elegir Pokémon para el slot) */
 .slot-picker-card {
-  max-width: 720px;
+  max-width: 760px;
   width: 92vw;
-  max-height: 85vh;
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 .slot-picker-search-bar {
-  margin: 1rem 0;
+  margin: 0.8rem 0 0.4rem;
+  flex-shrink: 0;
 }
 .slot-picker-search-bar input {
   width: 100%;
@@ -1099,8 +1101,10 @@
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 0.65rem;
   overflow-y: auto;
-  max-height: 480px;
-  padding: 0.25rem;
+  flex: 1;
+  min-height: 250px;
+  max-height: 56vh;
+  padding: 0.4rem 0.25rem;
 }
 .slot-pick-item {
   display: flex;
@@ -1181,3 +1185,149 @@
   .compare-tray { border-radius: 20px; flex-wrap: wrap; justify-content: center; }
   .page-title { font-size: 1.7rem; }
 }
+
+/* =========================================================
+   LEGIBILIDAD GLOBAL DE MENÚS DESPLEGABLES (SELECT & OPTION)
+   Soluciona fondo y letra idénticos en selectores de toda la app
+   ========================================================= */
+select {
+  color-scheme: dark !important;
+  background-color: #121826 !important;
+  color: #f8fafc !important;
+}
+select option,
+select optgroup {
+  background-color: #121826 !important;
+  color: #f8fafc !important;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+}
+select option:checked {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+select option:hover {
+  background-color: #1e293b !important;
+  color: #38bdf8 !important;
+}
+
+[data-theme="light"] select {
+  color-scheme: light !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] select option,
+[data-theme="light"] select optgroup {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] select option:checked {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+[data-theme="light"] select option:hover {
+  background-color: #e2e8f0 !important;
+  color: #0284c7 !important;
+}
+
+/* Selectores específicos */
+.sd-select,
+.team-select-dropdown,
+.sort-select,
+.adv-field select {
+  background-color: #121826 !important;
+  color: #f8fafc !important;
+  border: 1px solid var(--border-glass-hover);
+}
+.sd-select option,
+.team-select-dropdown option,
+.sort-select option,
+.adv-field select option {
+  background-color: #121826 !important;
+  color: #f8fafc !important;
+}
+[data-theme="light"] .sd-select,
+[data-theme="light"] .team-select-dropdown,
+[data-theme="light"] .sort-select,
+[data-theme="light"] .adv-field select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+}
+[data-theme="light"] .sd-select option,
+[data-theme="light"] .team-select-dropdown option,
+[data-theme="light"] .sort-select option,
+[data-theme="light"] .adv-field select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Chips de megapiedras en Showdown customizer */
+.sd-stone-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+.sd-stone-chip {
+  background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(59,130,246,0.25)) !important;
+  border-color: rgba(168,85,247,0.5) !important;
+  color: #e9d5ff !important;
+  font-size: 0.74rem !important;
+  padding: 0.3rem 0.6rem !important;
+}
+.sd-stone-chip:hover {
+  background: linear-gradient(135deg, #a855f7, #3b82f6) !important;
+  color: #ffffff !important;
+}
+
+/* Badges de Formas Alternativas */
+.mega-tag.form-1, .mega-tag.form-2 {
+  background: linear-gradient(135deg, #b06cff, #ff6bd6);
+  box-shadow: 0 0 10px rgba(176,108,255,0.45);
+}
+.mega-tag.form-3 {
+  background: linear-gradient(135deg, #e11d48, #be123c);
+  box-shadow: 0 0 10px rgba(225, 29, 72, 0.45);
+}
+.mega-tag.form-4 {
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.45);
+}
+.mega-tag.form-5 {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+}
+
+/* Píldoras de filtro rápido dentro del modal Slot Picker */
+.slot-picker-filter-chips {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.15rem 0 0.65rem;
+  margin-bottom: 0.4rem;
+}
+.sp-chip {
+  flex-shrink: 0;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.sp-chip:hover {
+  background: var(--surface-2);
+  color: var(--text-main);
+}
+.sp-chip.active {
+  background: linear-gradient(135deg, var(--pkmn-red), var(--pkmn-red-dark));
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 10px var(--pkmn-red-glow);
+}
+

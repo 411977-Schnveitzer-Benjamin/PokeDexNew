@@ -11,8 +11,7 @@
 
   // ---------- Estado de la vista ----------
   const st = {
-    gen: 1, // 0 = todas
-    showMegas: true,
+    gen: 1, // 0 = todas, FORMS_GEN = formas alternativas
     query: '',
     type: null,
     onlyFav: false,
@@ -33,7 +32,6 @@
     search: $('search-input'), clear: $('clear-search-btn'),
     chips: $('type-chips-container'), genButtons: $('gen-buttons'),
     favBtn: $('favorites-toggle-btn'), favBadge: $('fav-counter-badge'),
-    megaBtn: $('mega-toggle-btn'), megaBadge: $('mega-counter-badge'),
     advBtn: $('adv-toggle-btn'), advBadge: $('adv-counter-badge'), advPanel: $('adv-panel'),
     random: $('random-pokemon-btn'), sort: $('sort-select'),
     visible: $('visible-count'), total: $('gen-total-count'), genLabel: $('results-gen-label'),
@@ -51,11 +49,17 @@
     return set;
   }
 
-  function forceMegas() { return st.adv.form === 'mega' || st.adv.form === 'za'; }
+  const FORMS_GEN = 10;
+  const FORM_FILTERS = {
+    mega: p => p.isMega, za: p => p.isZA, gmax: p => p.isGmax,
+    regional: p => p.isRegional, primal: p => p.isPrimal
+  };
 
+  // Generaciones = Pokémon numerados en la Pokédex. Las formas sin número propio
+  // (Megas, Gigamax, regionales, primigenias) viven en la categoría "Formas".
   function genPool(gen) {
-    const megas = st.showMegas || forceMegas();
-    return PKX.ALL.filter(p => (gen === 0 || p.gen === gen) && (megas || !p.isMega));
+    if (gen === FORMS_GEN) return PKX.ALL.filter(p => p.isForm);
+    return PKX.ALL.filter(p => !p.isForm && (gen === 0 || p.gen === gen));
   }
 
   function advCount() {
@@ -91,9 +95,7 @@
       });
     }
     if (a.dual) r = r.filter(p => p.types.length === +a.dual);
-    if (a.form === 'base') r = r.filter(p => !p.isMega);
-    if (a.form === 'mega') r = r.filter(p => p.isMega);
-    if (a.form === 'za') r = r.filter(p => p.isZA);
+    if (a.form && FORM_FILTERS[a.form]) r = r.filter(FORM_FILTERS[a.form]);
     Object.entries(a.ranges).forEach(([key, rg]) => {
       if (!rg) return;
       const min = rg[0] === '' ? -Infinity : +rg[0];
@@ -126,6 +128,10 @@
         <span class="gen-roman">GEN ${i.roman}</span><span class="gen-region">${i.region}</span><span class="gen-count">${genPool(+g).length} Pokémon</span>
       </button>`;
     });
+    html += `
+      <button class="gen-btn gen-forms-btn ${st.gen === FORMS_GEN ? 'active' : ''}" data-gen="${FORMS_GEN}" style="--gen-c1:#a855f7;--gen-c2:#6d28d9;--gen-glow:#a855f766" title="Megaevoluciones, Gigamax, formas regionales y regresiones primigenias">
+        <span class="gen-roman">FORMAS</span><span class="gen-region">Alternativas</span><span class="gen-count">${genPool(FORMS_GEN).length} formas</span>
+      </button>`;
     el.genButtons.innerHTML = html;
   }
 
@@ -147,11 +153,11 @@
   function updateHeader() {
     const info = GENERATIONS[st.gen];
     const pool = genPool(st.gen);
-    el.regionBadge.textContent = info ? `${info.region} · Gen ${info.roman}` : 'Nacional · Gen I-IX';
-    el.totalBadge.textContent = `${pool.length} Pokémon`;
-    el.genLabel.textContent = info ? `Generación ${info.roman} (${info.region})` : 'Todas las generaciones';
+    const isForms = st.gen === FORMS_GEN;
+    el.regionBadge.textContent = isForms ? 'Formas alternativas' : info ? `${info.region} · Gen ${info.roman}` : 'Nacional · Gen I-IX';
+    el.totalBadge.textContent = `${pool.length} ${isForms ? 'formas' : 'Pokémon'}`;
+    el.genLabel.textContent = isForms ? 'Formas alternativas (Megas, Gigamax, regionales y primigenias)' : info ? `Generación ${info.roman} (${info.region})` : 'Todas las generaciones';
     el.total.textContent = pool.length;
-    el.megaBadge.textContent = PKX.ALL.filter(p => p.isMega && (st.gen === 0 || p.gen === st.gen)).length;
     el.favBadge.textContent = S.favorites.size;
     const n = advCount();
     el.advBadge.hidden = !n;
@@ -161,7 +167,9 @@
 
   // ---------- Tarjetas ----------
   function megaTags(p) {
-    return p.isMega ? `<span class="mega-tag">⚡ MEGA</span>${p.isZA ? '<span class="mega-tag za">Z-A</span>' : ''}` : '';
+    if (!p.isForm) return '';
+    const icon = p.isMega ? '⚡' : p.isGmax ? '☁️' : p.isPrimal ? '🌋' : '🗺️';
+    return `<span class="mega-tag form-${p.formKind}">${icon} ${PKX.FORM_LABELS[p.formKind]}</span>${p.isZA ? '<span class="mega-tag za">Z-A</span>' : ''}`;
   }
   function kindTag(p) {
     const k = PKX.kind(p);
@@ -175,7 +183,7 @@
     const fid = pad(p.id);
     const tags = megaTags(p) + kindTag(p);
     return `
-    <article class="pokemon-card ${p.isMega ? 'is-mega' : ''}" data-uid="${p.uid}" tabindex="0"
+    <article class="pokemon-card ${p.isForm ? 'is-mega' : ''}" data-uid="${p.uid}" tabindex="0"
       style="--card-color:${color};--card-glow:${color}66;--card-color-light:${color}22;">
       <span class="card-watermark">${fid}</span>
       <div class="card-top">
@@ -232,7 +240,7 @@
       <tr data-uid="${p.uid}">
         <td class="num dim">${pad(p.id)}</td>
         <td class="name-cell"><img src="${p.sprite}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
-          <span>${p.name}</span>${p.isMega ? `<span class="mega-tag mini">${p.isZA ? 'Z-A' : 'MEGA'}</span>` : ''}</td>
+          <span>${p.name}</span>${p.isForm ? `<span class="mega-tag mini">${p.isZA ? 'Z-A' : PKX.FORM_LABELS[p.formKind]}</span>` : ''}</td>
         <td class="types-cell">${p.types.map(t => PKX.typePill(t)).join('')}</td>
         ${heat(p.stats.hp, 200)}${heat(p.stats.attack, 200)}${heat(p.stats.defense, 200)}
         ${heat(p.stats.spAttack, 200)}${heat(p.stats.spDefense, 200)}${heat(p.stats.speed, 200)}
@@ -338,7 +346,6 @@
     });
 
     el.favBtn.addEventListener('click', () => { st.onlyFav = !st.onlyFav; el.favBtn.classList.toggle('active', st.onlyFav); render(); });
-    el.megaBtn.addEventListener('click', () => { st.showMegas = !st.showMegas; el.megaBtn.classList.toggle('active', st.showMegas); refreshAll(); });
     el.advBtn.addEventListener('click', () => {
       el.advPanel.hidden = !el.advPanel.hidden;
       el.advBtn.setAttribute('aria-expanded', String(!el.advPanel.hidden));
@@ -361,7 +368,12 @@
     $('adv-ability').addEventListener('input', e => { st.adv.ability = e.target.value; render(); });
     $('adv-kind').addEventListener('change', e => { st.adv.kind = e.target.value; render(); });
     $('adv-dual').addEventListener('change', e => { st.adv.dual = e.target.value; render(); });
-    $('adv-form').addEventListener('change', e => { st.adv.form = e.target.value; refreshAll(); });
+    $('adv-form').addEventListener('change', e => {
+      st.adv.form = e.target.value;
+      // Filtrar por tipo de forma lleva directamente a la categoría "Formas"
+      if (st.adv.form) { st.gen = FORMS_GEN; st.type = null; }
+      refreshAll();
+    });
     $('adv-stats').addEventListener('input', e => {
       const i = e.target.closest('input');
       if (!i) return;

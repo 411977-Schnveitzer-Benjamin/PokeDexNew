@@ -276,7 +276,7 @@
       if (PKX.teamAdd(uid)) {
         tools.team();
       }
-    }, { placeholder: 'Buscar y agregar Pokémon al equipo…' }));
+    }, { placeholder: 'Buscar y agregar Pokémon al equipo…', teamMode: true }));
 
     // Eventos de barra de equipos
     $('team-select').addEventListener('change', e => {
@@ -368,6 +368,7 @@
               <a href="#/pokemon/${p.uid}" class="slot-pk-name">${p.name}</a>
               <div class="slot-types">${p.types.map(t => PKX.typePill(t)).join('')}</div>
               <div class="slot-item-line"><small>Objeto:</small> <b>${esc(member.item || '---')}</b></div>
+              ${(() => { const f = PKX.formFromItem(p.id, member.item); return f ? `<div class="slot-detail-line"><span class="mega-tag mini">💎 ${f.isPrimal ? 'Regresión' : 'Mega'}: ${esc(f.name)}</span></div>` : ''; })()}
               <div class="slot-detail-line"><small>Nv. ${member.level || 50}</small> · <small>${esc(nature.name || '---')}</small></div>
               <div class="slot-detail-line"><small>Hab:</small> <b>${esc(abilityName)}</b></div>
             </div>
@@ -685,8 +686,10 @@
               <label for="sd-item-input">Objeto equipado:</label>
               <input type="text" id="sd-item-input" list="sd-items-list" value="${esc(member.item || '')}" placeholder="Ej: Restos (Leftovers), Vidasfera..." class="sd-input">
               <datalist id="sd-items-list">
+                ${PKX.stonesForSpecies(p.id).map(s => `<option value="${esc(s.stone.n)}">💎 Activa ${esc(s.form.name)}</option>`).join('')}
                 ${PKX.COMPETITIVE_ITEMS.map(it => `<option value="${it}">`).join('')}
               </datalist>
+              ${PKX.stonesForSpecies(p.id).length ? `<div class="sd-stone-chips">${PKX.stonesForSpecies(p.id).map(s => `<button type="button" class="sd-preset-chip sd-stone-chip" data-stone="${esc(s.stone.n)}">💎 ${esc(s.stone.n)} → ${esc(s.form.name)}</button>`).join('')}</div>` : ''}
             </div>
 
             <div class="sd-form-group">
@@ -913,6 +916,9 @@
 
     modal.querySelectorAll('.sd-move-picker').forEach(sel => {
       sel.addEventListener('change', updateMoveDetails);
+    });
+    modal.querySelectorAll('.sd-stone-chip').forEach(b => {
+      b.addEventListener('click', () => { $('sd-item-input').value = b.dataset.stone; });
     });
 
     // Shiny toggle

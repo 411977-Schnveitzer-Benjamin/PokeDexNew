@@ -14,8 +14,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css?v=3">
-  <link rel="stylesheet" href="features.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="features.css?v=4">
 </head>
 <body>
   <div class="ambient-glow glow-1" aria-hidden="true"></div>
@@ -91,10 +91,6 @@
                 <svg class="heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 <span>Favoritos</span><span id="fav-counter-badge" class="badge-mini">0</span>
               </button>
-              <button id="mega-toggle-btn" class="action-btn mega-btn active" title="Mostrar u ocultar Megaevoluciones">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                <span>Megas</span><span id="mega-counter-badge" class="badge-mini">0</span>
-              </button>
               <button id="adv-toggle-btn" class="action-btn adv-btn" title="Filtros avanzados" aria-expanded="false">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
                 <span>Filtros</span><span id="adv-counter-badge" class="badge-mini" hidden>0</span>
@@ -159,12 +155,14 @@
                 </select>
               </label>
               <label class="adv-field">
-                <span>Forma</span>
+                <span>Forma alternativa</span>
                 <select id="adv-form">
                   <option value="">Todas</option>
-                  <option value="base">Solo formas base</option>
-                  <option value="mega">Solo Megas</option>
-                  <option value="za">Solo Megas de Z-A</option>
+                  <option value="mega">Megaevoluciones</option>
+                  <option value="za">Megas de Z-A</option>
+                  <option value="gmax">Gigamax</option>
+                  <option value="regional">Formas regionales</option>
+                  <option value="primal">Regresiones primigenias</option>
                 </select>
               </label>
             </div>
@@ -232,12 +230,13 @@
 
   <audio id="cry-audio-player" preload="none"></audio>
 
-  <script src="pokemon-data.js?v=3"></script>
-  <script src="moves-data.js?v=3"></script>
-  <script src="core.js?v=3"></script>
-  <script src="home.js?v=3"></script>
-  <script src="detail.js?v=3"></script>
-  <script src="tools.js?v=3"></script>
-  <script src="main.js?v=3"></script>
+  <script src="pokemon-data.js?v=4"></script>
+  <script src="forms-data.js?v=4"></script>
+  <script src="moves-data.js?v=4"></script>
+  <script src="core.js?v=4"></script>
+  <script src="home.js?v=4"></script>
+  <script src="detail.js?v=4"></script>
+  <script src="tools.js?v=4"></script>
+  <script src="main.js?v=4"></script>
 </body>
 </html>
