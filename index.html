@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokédex Nacional | Generaciones I-IX y Megaevoluciones</title>
+  <meta name="description" content="Pokédex Nacional con todas las generaciones y Megaevoluciones (incluidas las de Leyendas Pokémon: Z-A). Habilidades, evoluciones, movimientos, comparador, calculadora de stats, tabla de tipos y creador de equipos.">
+  <meta name="theme-color" content="#0a0d14">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="features.css">
+</head>
+<body>
+  <div class="ambient-glow glow-1" aria-hidden="true"></div>
+  <div class="ambient-glow glow-2" aria-hidden="true"></div>
+  <div class="bg-pokeball-watermark" aria-hidden="true"></div>
+
+  <div class="pokedex-app" id="app-container">
+
+    <!-- Barra de navegación principal -->
+    <nav class="topnav" aria-label="Navegación principal">
+      <a class="brand" href="#/" id="nav-brand" aria-label="Inicio">
+        <svg viewBox="0 0 100 100" width="30" height="30" aria-hidden="true">
+          <circle cx="50" cy="50" r="46" fill="#ee1515" stroke="currentColor" stroke-width="6"/>
+          <path d="M 4,50 A 46,46 0 0,0 96,50 Z" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+          <line x1="4" y1="50" x2="96" y2="50" stroke="currentColor" stroke-width="6"/>
+          <circle cx="50" cy="50" r="14" fill="#ffffff" stroke="currentColor" stroke-width="6"/>
+        </svg>
+        <span>Poké<b>dex</b></span>
+      </a>
+      <div class="nav-links" id="nav-links">
+        <a href="#/" data-route="home" id="nav-home">Pokédex</a>
+        <a href="#/types" data-route="types" id="nav-types">Tipos</a>
+        <a href="#/team" data-route="team" id="nav-team">Equipo <span class="nav-count" id="nav-team-count">0</span></a>
+        <a href="#/compare" data-route="compare" id="nav-compare">Comparar <span class="nav-count" id="nav-compare-count">0</span></a>
+      </div>
+      <div class="nav-actions">
+        <button id="shiny-global-btn" class="nav-icon-btn" title="Mostrar versiones Shiny" aria-pressed="false">✨</button>
+        <button id="theme-toggle-btn" class="nav-icon-btn" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+        <button id="install-btn" class="nav-install-btn" hidden>Instalar app</button>
+      </div>
+    </nav>
+
+    <!-- ===================== VISTA: INICIO ===================== -->
+    <section class="view" id="view-home">
+      <header class="pokedex-header" id="main-header">
+        <div class="header-top-bar">
+          <div class="sensor-cluster" aria-label="Indicadores de estado de la Pokédex">
+            <div class="big-blue-sensor pulse" id="main-sensor" title="Sensor Principal"><span class="sensor-reflection"></span></div>
+            <div class="mini-indicators">
+              <span class="indicator red"></span><span class="indicator yellow"></span><span class="indicator green"></span>
+            </div>
+          </div>
+          <div class="header-badges">
+            <span class="badge region-badge"><span id="region-badge-text">Kanto · Gen I</span></span>
+            <span class="badge count-badge" id="registered-counter"><span class="dot-online"></span> <span id="total-badge-text">151 Pokémon</span></span>
+          </div>
+        </div>
+
+        <div class="header-title-block">
+          <h1 class="main-title"><span class="title-red">POKÉ</span><span class="title-white">DEX</span></h1>
+          <p class="subtitle">Todas las generaciones, Megaevoluciones incluidas (también las de Leyendas Pokémon: Z-A)</p>
+        </div>
+
+        <nav class="gen-selector" aria-label="Selector de generación">
+          <div class="type-filter-label">Generación:</div>
+          <div class="gen-buttons" id="gen-buttons" role="toolbar"></div>
+        </nav>
+
+        <section class="controls-section" aria-label="Controles de búsqueda y filtros">
+          <div class="search-bar-wrapper">
+            <div class="search-input-box">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="search-input" placeholder="Buscar por nombre o número (ej. Pikachu, #025, Charizard)…" autocomplete="off" spellcheck="false" aria-label="Buscar Pokémon">
+              <button id="clear-search-btn" class="clear-btn" aria-label="Limpiar búsqueda" style="display:none;">✕</button>
+              <span class="keyboard-hint" title="Presiona '/' para buscar">/</span>
+            </div>
+
+            <div class="quick-actions">
+              <button id="favorites-toggle-btn" class="action-btn fav-filter-btn" title="Filtrar por favoritos">
+                <svg class="heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <span>Favoritos</span><span id="fav-counter-badge" class="badge-mini">0</span>
+              </button>
+              <button id="mega-toggle-btn" class="action-btn mega-btn active" title="Mostrar u ocultar Megaevoluciones">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                <span>Megas</span><span id="mega-counter-badge" class="badge-mini">0</span>
+              </button>
+              <button id="adv-toggle-btn" class="action-btn adv-btn" title="Filtros avanzados" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                <span>Filtros</span><span id="adv-counter-badge" class="badge-mini" hidden>0</span>
+              </button>
+              <button id="random-pokemon-btn" class="action-btn random-btn" title="Elegir un Pokémon al azar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><circle cx="8" cy="8" r="1.5" fill="currentColor"></circle><circle cx="16" cy="16" r="1.5" fill="currentColor"></circle><circle cx="12" cy="12" r="1.5" fill="currentColor"></circle><circle cx="16" cy="8" r="1.5" fill="currentColor"></circle><circle cx="8" cy="16" r="1.5" fill="currentColor"></circle></svg>
+                <span>Aleatorio</span>
+              </button>
+              <div class="sort-wrapper">
+                <label for="sort-select" class="visually-hidden">Ordenar por</label>
+                <select id="sort-select" class="sort-select" aria-label="Criterio de ordenamiento">
+                  <option value="id-asc">Número: Menor a Mayor</option>
+                  <option value="id-desc">Número: Mayor a Menor</option>
+                  <option value="name-asc">Nombre: A - Z</option>
+                  <option value="name-desc">Nombre: Z - A</option>
+                  <option value="total-desc">Más Fuertes (BST)</option>
+                  <option value="speed-desc">Más Rápidos</option>
+                  <option value="hp-desc">Más PS</option>
+                  <option value="attack-desc">Más Ataque</option>
+                  <option value="defense-desc">Más Defensa</option>
+                  <option value="spAttack-desc">Más Atq. Esp.</option>
+                  <option value="spDefense-desc">Más Def. Esp.</option>
+                </select>
+              </div>
+              <div class="view-toggle" role="group" aria-label="Tipo de vista">
+                <button id="view-cards-btn" class="view-toggle-btn active" title="Vista de tarjetas" aria-label="Vista de tarjetas">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                </button>
+                <button id="view-table-btn" class="view-toggle-btn" title="Vista de tabla ordenable" aria-label="Vista de tabla">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filtros avanzados -->
+          <div class="adv-panel" id="adv-panel" hidden>
+            <div class="adv-grid">
+              <label class="adv-field">
+                <span>Habilidad</span>
+                <input type="text" id="adv-ability" list="ability-list" placeholder="Ej. Levitación, Intimidación…" autocomplete="off">
+                <datalist id="ability-list"></datalist>
+              </label>
+              <label class="adv-field">
+                <span>Categoría</span>
+                <select id="adv-kind">
+                  <option value="">Todas</option>
+                  <option value="0">Normales</option>
+                  <option value="1">Bebés</option>
+                  <option value="2">Pseudolegendarios</option>
+                  <option value="3">Legendarios</option>
+                  <option value="4">Míticos</option>
+                  <option value="L">Legendarios + Míticos</option>
+                </select>
+              </label>
+              <label class="adv-field">
+                <span>Cantidad de tipos</span>
+                <select id="adv-dual">
+                  <option value="">Cualquiera</option>
+                  <option value="1">Un solo tipo</option>
+                  <option value="2">Tipo doble</option>
+                </select>
+              </label>
+              <label class="adv-field">
+                <span>Forma</span>
+                <select id="adv-form">
+                  <option value="">Todas</option>
+                  <option value="base">Solo formas base</option>
+                  <option value="mega">Solo Megas</option>
+                  <option value="za">Solo Megas de Z-A</option>
+                </select>
+              </label>
+            </div>
+            <div class="adv-stats-title">Rango de estadísticas base</div>
+            <div class="adv-stats" id="adv-stats"></div>
+            <div class="adv-actions"><button id="adv-clear-btn" class="reset-link-btn" type="button">Limpiar filtros avanzados</button></div>
+          </div>
+
+          <div class="type-filter-container">
+            <div class="type-filter-label">Filtrar por Tipo:</div>
+            <div class="type-chips-scroll" id="type-chips-container" role="toolbar" aria-label="Filtro de tipos"></div>
+          </div>
+        </section>
+      </header>
+
+      <main class="pokedex-main" id="main-content">
+        <div class="results-header" id="results-summary">
+          <div class="results-count-text">
+            <span id="results-gen-label">Generación I</span> · Mostrando <strong id="visible-count">151</strong> de <strong id="gen-total-count">151</strong>
+          </div>
+          <button id="reset-filters-btn" class="reset-link-btn" style="display:none;">Restablecer filtros</button>
+        </div>
+
+        <section class="pokemon-grid" id="pokemon-grid" aria-live="polite"></section>
+        <div class="table-wrap" id="pokemon-table-wrap" hidden></div>
+
+        <div class="empty-state" id="empty-state" style="display:none;">
+          <div class="empty-state-art">
+            <svg viewBox="0 0 100 100" class="empty-pokeball"><circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="6" opacity="0.4"/><line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" stroke-width="6" opacity="0.4"/><circle cx="50" cy="50" r="14" fill="none" stroke="currentColor" stroke-width="6" opacity="0.4"/></svg>
+            <span class="empty-emoji">🔍</span>
+          </div>
+          <h3>No se encontraron Pokémon</h3>
+          <p>No hay ningún Pokémon que coincida con tu búsqueda o filtros seleccionados.</p>
+          <button id="empty-reset-btn" class="btn-primary">Ver todos los Pokémon</button>
+        </div>
+      </main>
+    </section>
+
+    <!-- ===================== OTRAS VISTAS ===================== -->
+    <section class="view" id="view-detail" hidden></section>
+    <section class="view" id="view-compare" hidden></section>
+    <section class="view" id="view-types" hidden></section>
+    <section class="view" id="view-team" hidden></section>
+
+    <footer class="pokedex-footer">
+      <div class="footer-content">
+        <p class="footer-text"><strong>Pokédex Nacional</strong> · Generaciones I-IX · Creado como proyecto web personal</p>
+        <p class="footer-credits">
+          Datos, sprites e ilustraciones provistos por <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer">PokéAPI</a>. Pokémon y Nintendo son marcas registradas de Nintendo / Creatures Inc. / GAME FREAK inc.
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Bandeja flotante del comparador -->
+  <div class="compare-tray" id="compare-tray" hidden>
+    <div class="tray-items" id="tray-items"></div>
+    <a href="#/compare" class="btn-primary tray-go" id="tray-go">Comparar</a>
+    <button class="tray-clear" id="tray-clear" title="Vaciar comparador" aria-label="Vaciar comparador">✕</button>
+  </div>
+
+  <button id="scroll-top-btn" class="scroll-top-btn" title="Volver arriba" aria-label="Volver arriba">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+  </button>
+
+  <audio id="cry-audio-player" preload="none"></audio>
+
+  <script src="pokemon-data.js"></script>
+  <script src="moves-data.js"></script>
+  <script src="core.js"></script>
+  <script src="home.js"></script>
+  <script src="detail.js"></script>
+  <script src="tools.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
