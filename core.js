@@ -491,12 +491,49 @@
 
   PKX.setCompare = list => { PKX.state.compare = list.slice(0, 3); PKX.emit(); };
   PKX.setShiny = v => { PKX.state.shiny = v; save('pokedex_shiny', v); PKX.emit(); };
-  PKX.setTheme = t => {
+  PKX.setTheme = (t, clickEvent) => {
     PKX.state.theme = t;
     save('pokedex_theme', t);
+
+    // Micro-animación en el botón
+    const btn = document.getElementById('theme-toggle-btn');
+    if (btn) {
+      btn.classList.add('theme-pop');
+      setTimeout(() => btn.classList.remove('theme-pop'), 520);
+    }
+
+    // Onda radial expansiva desde la posición del botón
+    try {
+      const rect = btn ? btn.getBoundingClientRect() : null;
+      const x = rect ? rect.left + rect.width / 2 : window.innerWidth - 60;
+      const y = rect ? rect.top + rect.height / 2 : 30;
+      const maxDist = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y)
+      );
+
+      const ripple = document.createElement('div');
+      ripple.className = 'theme-ripple';
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      ripple.style.width = `${maxDist * 2.2}px`;
+      ripple.style.height = `${maxDist * 2.2}px`;
+      ripple.style.background = t === 'light'
+        ? 'radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(240,244,252,0.3) 60%, transparent 100%)'
+        : 'radial-gradient(circle, rgba(10,13,20,0.75) 0%, rgba(18,24,36,0.35) 60%, transparent 100%)';
+      document.body.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    } catch (e) { /* noop */ }
+
+    // Transición suave en superficies
+    document.documentElement.classList.add('theme-transitioning');
     document.documentElement.setAttribute('data-theme', t);
     const m = document.querySelector('meta[name="theme-color"]');
     if (m) m.setAttribute('content', t === 'light' ? '#f3f5fa' : '#0a0d14');
+
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning');
+    }, 480);
   };
 
   // ==========================================

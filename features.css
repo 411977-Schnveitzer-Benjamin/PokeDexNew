@@ -102,9 +102,68 @@
 .nav-icon-btn svg { width: 19px; height: 19px; }
 .nav-icon-btn:hover { background: var(--surface-2); color: var(--text-main); transform: translateY(-1px); }
 .nav-icon-btn.active { background: rgba(255, 203, 5, 0.18); border-color: #ffcb05; box-shadow: 0 0 14px rgba(255, 203, 5, 0.35); }
+
+/* Animación del botón de alternar tema */
+#theme-toggle-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+#theme-toggle-btn svg {
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+#theme-toggle-btn.theme-pop {
+  transform: scale(1.22) rotate(20deg);
+  box-shadow: 0 0 16px rgba(255, 203, 5, 0.45);
+}
+#theme-toggle-btn.theme-pop svg {
+  transform: rotate(360deg) scale(1.15);
+}
+
 .icon-sun { display: none; }
 [data-theme="light"] .icon-sun { display: block; }
 [data-theme="light"] .icon-moon { display: none; }
+
+/* Transición suave global entre tema claro y oscuro */
+html.theme-transitioning,
+html.theme-transitioning body,
+html.theme-transitioning .pokedex-app,
+html.theme-transitioning .topnav,
+html.theme-transitioning .pokedex-header,
+html.theme-transitioning .d-card,
+html.theme-transitioning .pokemon-card,
+html.theme-transitioning .modal-card,
+html.theme-transitioning .team-slot-card,
+html.theme-transitioning .pokedex-footer {
+  transition: background-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.35s ease,
+              box-shadow 0.45s ease !important;
+}
+
+/* Onda expansiva circular al cambiar de tema */
+.theme-ripple {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%) scale(0);
+  animation: themeRippleExpand 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes themeRippleExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.65;
+  }
+  60% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
 .nav-install-btn {
   padding: 0.55rem 1rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #3b4cca, #00d2ff);
   color: #fff; font-weight: 700; cursor: pointer; font-family: var(--font-body);

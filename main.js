@@ -94,7 +94,7 @@
       if (S.compare.length < 2) { e.preventDefault(); PKX.toast('Elegí al menos 2 Pokémon'); }
     });
 
-    $('theme-toggle-btn').addEventListener('click', () => PKX.setTheme(S.theme === 'light' ? 'dark' : 'light'));
+    $('theme-toggle-btn').addEventListener('click', e => PKX.setTheme(S.theme === 'light' ? 'dark' : 'light', e));
     $('shiny-global-btn').addEventListener('click', () => {
       PKX.setShiny(!S.shiny);
       PKX.toast(S.shiny ? '✨ Mostrando versiones Shiny' : 'Mostrando versiones normales');
