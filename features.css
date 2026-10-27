@@ -722,6 +722,10 @@
   font-family: var(--font-heading);
   font-size: 0.85rem;
   color: var(--text-main);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .slot-bottom-actions {

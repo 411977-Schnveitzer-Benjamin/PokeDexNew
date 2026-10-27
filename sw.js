@@ -1,5 +1,5 @@
 /* Service worker de la Pokédex: funciona offline y cachea imágenes/fuentes en uso. */
-const VERSION = 'pokedex-v2';
+const VERSION = 'pokedex-v3';
 const SHELL = [
   './', 'index.html', 'styles.css', 'features.css', 'core.js', 'home.js', 'detail.js', 'tools.js', 'main.js',
   'pokemon-data.js', 'moves-data.js', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png'

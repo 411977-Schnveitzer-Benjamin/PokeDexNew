@@ -39,14 +39,35 @@
   PKX.STAT_LABELS = ['PS', 'Ataque', 'Defensa', 'Atq. Esp.', 'Def. Esp.', 'Velocidad'];
   PKX.STAT_SHORT = ['PS', 'ATQ', 'DEF', 'AE', 'DE', 'VEL'];
 
-  // Naturalezas: [nombre, +stat, -stat] (índices 0=PS...5=Vel, -1 neutra)
+  // Naturalezas competitivas completas (25)
   PKX.NATURES = [
-    ['Fuerte', -1, -1], ['Huraña', 1, 2], ['Audaz', 1, 5], ['Pícara', 1, 3], ['Floja', 1, 4],
-    ['Osada', 2, 1], ['Dócil', -1, -1], ['Plácida', 2, 5], ['Agitada', 2, 3], ['Descuidada', 2, 4],
-    ['Miedosa', 5, 1], ['Activa', 5, 2], ['Seria', -1, -1], ['Alegre', 5, 3], ['Ingenua', 5, 4],
-    ['Modesta', 3, 1], ['Afable', 3, 2], ['Mansa', 3, 5], ['Tímida', -1, -1], ['Alocada', 3, 4],
-    ['Serena', 4, 1], ['Amable', 4, 2], ['Grosera', 4, 5], ['Cauta', 4, 3], ['Rara', -1, -1]
+    { name: 'Fuerte', en: 'Hardy', plus: null, minus: null, label: 'Fuerte (Hardy) — Neutra' },
+    { name: 'Huraña', en: 'Lonely', plus: 1, minus: 2, label: 'Huraña (Lonely) — +10% Ataque / -10% Defensa' },
+    { name: 'Audaz', en: 'Brave', plus: 1, minus: 5, label: 'Audaz (Brave) — +10% Ataque / -10% Velocidad' },
+    { name: 'Firme', en: 'Adamant', plus: 1, minus: 3, label: 'Firme (Adamant) — +10% Ataque / -10% Atq. Especial' },
+    { name: 'Pícara', en: 'Naughty', plus: 1, minus: 4, label: 'Pícara (Naughty) — +10% Ataque / -10% Def. Especial' },
+    { name: 'Osada', en: 'Bold', plus: 2, minus: 1, label: 'Osada (Bold) — +10% Defensa / -10% Ataque' },
+    { name: 'Dócil', en: 'Docile', plus: null, minus: null, label: 'Dócil (Docile) — Neutra' },
+    { name: 'Plácida', en: 'Relaxed', plus: 2, minus: 5, label: 'Plácida (Relaxed) — +10% Defensa / -10% Velocidad' },
+    { name: 'Agitada', en: 'Impish', plus: 2, minus: 3, label: 'Agitada (Impish) — +10% Defensa / -10% Atq. Especial' },
+    { name: 'Floja', en: 'Lax', plus: 2, minus: 4, label: 'Floja (Lax) — +10% Defensa / -10% Def. Especial' },
+    { name: 'Miedosa', en: 'Timid', plus: 5, minus: 1, label: 'Miedosa (Timid) — +10% Velocidad / -10% Ataque' },
+    { name: 'Activa', en: 'Hasty', plus: 5, minus: 2, label: 'Activa (Hasty) — +10% Velocidad / -10% Defensa' },
+    { name: 'Seria', en: 'Serious', plus: null, minus: null, label: 'Seria (Serious) — Neutra' },
+    { name: 'Alegre', en: 'Jolly', plus: 5, minus: 3, label: 'Alegre (Jolly) — +10% Velocidad / -10% Atq. Especial' },
+    { name: 'Ingenua', en: 'Naive', plus: 5, minus: 4, label: 'Ingenua (Naive) — +10% Velocidad / -10% Def. Especial' },
+    { name: 'Modesta', en: 'Modest', plus: 3, minus: 1, label: 'Modesta (Modest) — +10% Atq. Especial / -10% Ataque' },
+    { name: 'Afable', en: 'Mild', plus: 3, minus: 2, label: 'Afable (Mild) — +10% Atq. Especial / -10% Defensa' },
+    { name: 'Mansa', en: 'Quiet', plus: 3, minus: 5, label: 'Mansa (Quiet) — +10% Atq. Especial / -10% Velocidad' },
+    { name: 'Tímida', en: 'Bashful', plus: null, minus: null, label: 'Tímida (Bashful) — Neutra' },
+    { name: 'Alocada', en: 'Rash', plus: 3, minus: 4, label: 'Alocada (Rash) — +10% Atq. Especial / -10% Def. Especial' },
+    { name: 'Serena', en: 'Calm', plus: 4, minus: 1, label: 'Serena (Calm) — +10% Def. Especial / -10% Ataque' },
+    { name: 'Amable', en: 'Gentle', plus: 4, minus: 2, label: 'Amable (Gentle) — +10% Def. Especial / -10% Defensa' },
+    { name: 'Grosera', en: 'Sassy', plus: 4, minus: 5, label: 'Grosera (Sassy) — +10% Def. Especial / -10% Velocidad' },
+    { name: 'Cauta', en: 'Careful', plus: 4, minus: 3, label: 'Cauta (Careful) — +10% Def. Especial / -10% Atq. Especial' },
+    { name: 'Rara', en: 'Quirky', plus: null, minus: null, label: 'Rara (Quirky) — Neutra' }
   ];
+  PKX.NATURES.forEach(n => { n[0] = n.name; n[1] = n.plus ?? -1; n[2] = n.minus ?? -1; });
 
   PKX.KINDS = { 0: '', 1: 'Bebé', 2: 'Pseudolegendario', 3: 'Legendario', 4: 'Mítico' };
 
@@ -425,38 +446,6 @@
   };
 
   // ==========================================
-  // NATURALEZAS COMPETITIVAS (25 Natures)
-  // Indices: 0: HP, 1: Attack, 2: Defense, 3: Sp. Atk, 4: Sp. Def, 5: Speed
-  // ==========================================
-  PKX.NATURES = [
-    { name: 'Fuerte (Hardy)', plus: null, minus: null, en: 'Hardy' },
-    { name: 'Huraña (Lonely)', plus: 1, minus: 2, en: 'Lonely' },
-    { name: 'Audaz (Brave)', plus: 1, minus: 5, en: 'Brave' },
-    { name: 'Firme (Adamant)', plus: 1, minus: 3, en: 'Adamant' },
-    { name: 'Pícara (Naughty)', plus: 1, minus: 4, en: 'Naughty' },
-    { name: 'Osada (Bold)', plus: 2, minus: 1, en: 'Bold' },
-    { name: 'Dócil (Docile)', plus: null, minus: null, en: 'Docile' },
-    { name: 'Plácida (Relaxed)', plus: 2, minus: 5, en: 'Relaxed' },
-    { name: 'Agitada (Impish)', plus: 2, minus: 3, en: 'Impish' },
-    { name: 'Floja (Lax)', plus: 2, minus: 4, en: 'Lax' },
-    { name: 'Miedosa (Timid)', plus: 5, minus: 1, en: 'Timid' },
-    { name: 'Activa (Hasty)', plus: 5, minus: 2, en: 'Hasty' },
-    { name: 'Seria (Serious)', plus: null, minus: null, en: 'Serious' },
-    { name: 'Alegre (Jolly)', plus: 5, minus: 3, en: 'Jolly' },
-    { name: 'Ingenua (Naive)', plus: 5, minus: 4, en: 'Naive' },
-    { name: 'Modesta (Modest)', plus: 3, minus: 1, en: 'Modest' },
-    { name: 'Afable (Mild)', plus: 3, minus: 2, en: 'Mild' },
-    { name: 'Mansa (Quiet)', plus: 3, minus: 5, en: 'Quiet' },
-    { name: 'Tímida (Bashful)', plus: null, minus: null, en: 'Bashful' },
-    { name: 'Alocada (Rash)', plus: 3, minus: 4, en: 'Rash' },
-    { name: 'Serena (Calm)', plus: 4, minus: 1, en: 'Calm' },
-    { name: 'Amable (Gentle)', plus: 4, minus: 2, en: 'Gentle' },
-    { name: 'Grosera (Sassy)', plus: 4, minus: 5, en: 'Sassy' },
-    { name: 'Cauta (Careful)', plus: 4, minus: 3, en: 'Careful' },
-    { name: 'Rara (Quirky)', plus: null, minus: null, en: 'Quirky' }
-  ];
-
-  // ==========================================
   // STATS FORMULA (Gen 3 - Gen 9)
   // ==========================================
   PKX.calcStat = function (base, iv, ev, level, natureMult, isHp) {
@@ -466,15 +455,17 @@
   };
 
   PKX.calculateMemberStats = function (member) {
+    if (!member) return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, total: 0 };
     const p = PKX.BY_UID[member.uid];
-    if (!p) return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, total: 0, 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    const n = PKX.NATURES[member.nature !== undefined ? member.nature : 0] || PKX.NATURES[0];
-    const L = member.level || 50;
-    const ivs = member.ivs || [31, 31, 31, 31, 31, 31];
-    const evs = member.evs || [0, 0, 0, 0, 0, 0];
+    if (!p) return { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, total: 0 };
+    const natIdx = typeof member.nature === 'number' ? member.nature : 0;
+    const n = PKX.NATURES[natIdx] || PKX.NATURES[0];
+    const L = Math.max(1, Math.min(100, parseInt(member.level, 10) || 50));
+    const ivs = Array.isArray(member.ivs) ? member.ivs : [31, 31, 31, 31, 31, 31];
+    const evs = Array.isArray(member.evs) ? member.evs : [0, 0, 0, 0, 0, 0];
 
     const vals = PKX.STAT_KEYS.map((k, i) => {
-      const base = p.stats[k] || 0;
+      const base = (p.statsArr && p.statsArr[i] !== undefined) ? p.statsArr[i] : (p.stats[k] || 0);
       let mult = 1.0;
       if (n.plus === i && n.minus !== i) mult = 1.1;
       else if (n.minus === i && n.plus !== i) mult = 0.9;
@@ -504,13 +495,6 @@
   // ==========================================
   PKX.exportTeamShowdown = function (team) {
     if (!team || !team.members || !team.members.length) return '';
-    const natureNames = [
-      'Hardy', 'Lonely', 'Brave', 'Adamant', 'Naughty',
-      'Bold', 'Docile', 'Relaxed', 'Impish', 'Lax',
-      'Timid', 'Hasty', 'Serious', 'Jolly', 'Naive',
-      'Modest', 'Mild', 'Quiet', 'Bashful', 'Rash',
-      'Calm', 'Gentle', 'Sassy', 'Careful', 'Quirky'
-    ];
     const statLabelsShowdown = ['HP', 'Atk', 'Def', 'SpA', 'SpD', 'Spe'];
 
     return team.members.map(m => {
@@ -518,7 +502,7 @@
       if (!p) return '';
       let out = p.name;
       if (m.item) {
-        // Strip out Spanish translation in parentheses if present
+        // Limpiar traducción entre paréntesis si está presente
         const itemClean = m.item.replace(/\s*\(.*?\)/, '').trim();
         out += ` @ ${itemClean}`;
       }
@@ -546,9 +530,10 @@
 
       // Nature
       const natIdx = m.nature !== undefined ? m.nature : 0;
-      out += `${natureNames[natIdx] || 'Hardy'} Nature\n`;
+      const nat = PKX.NATURES[natIdx] || PKX.NATURES[0];
+      out += `${nat.en || 'Hardy'} Nature\n`;
 
-      // IVs (only show if not all 31)
+      // IVs (solo mostrar si alguno no es 31)
       if (m.ivs && m.ivs.some(v => v < 31)) {
         const ivParts = [];
         m.ivs.forEach((v, i) => {
@@ -567,6 +552,134 @@
 
       return out.trim();
     }).filter(Boolean).join('\n\n');
+  };
+
+  PKX.importTeamShowdown = function (text, newTeamName) {
+    if (!text || !text.trim()) return null;
+    const blocks = text.trim().split(/\n\s*\n+/);
+    const members = [];
+    const statMap = { hp: 0, atk: 1, def: 2, spa: 3, spd: 4, spe: 5 };
+
+    for (const b of blocks) {
+      if (members.length >= 6) break;
+      const lines = b.trim().split('\n').map(l => l.trim()).filter(Boolean);
+      if (!lines.length) continue;
+
+      const first = lines[0];
+      let pkmPart = first;
+      let item = '';
+      if (first.includes('@')) {
+        const parts = first.split('@');
+        pkmPart = parts[0].trim();
+        item = parts.slice(1).join('@').trim();
+      }
+
+      let speciesName = pkmPart;
+      const parenMatch = pkmPart.match(/\(([^)]+)\)/);
+      if (parenMatch) speciesName = parenMatch[1].trim();
+
+      const cleanName = PKX.norm(speciesName);
+      let foundPkm = PKX.ORDERED.find(p => PKX.norm(p.name) === cleanName);
+      if (!foundPkm) {
+        foundPkm = PKX.ORDERED.find(p => PKX.norm(p.name).replace(/[^a-z0-9]/g, '') === cleanName.replace(/[^a-z0-9]/g, ''));
+      }
+      if (!foundPkm) continue;
+
+      let level = 100;
+      let shiny = false;
+      let ability = (foundPkm.abilities && foundPkm.abilities[0] && foundPkm.abilities[0].slug) || '';
+      let nature = 0;
+      const evs = [0, 0, 0, 0, 0, 0];
+      const ivs = [31, 31, 31, 31, 31, 31];
+      const moves = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^Ability:/i.test(line)) {
+          const abStr = line.replace(/^Ability:\s*/i, '').trim();
+          const abSlug = Object.keys(window.ABILITIES || {}).find(s => {
+            const inf = window.ABILITIES[s];
+            return PKX.norm(inf.n) === PKX.norm(abStr) || PKX.norm(s) === PKX.norm(abStr);
+          });
+          if (abSlug) ability = abSlug;
+          else if (foundPkm.abilities) {
+            const m = foundPkm.abilities.find(a => PKX.norm(a.slug) === PKX.norm(abStr));
+            if (m) ability = m.slug;
+          }
+        } else if (/^Level:/i.test(line)) {
+          level = parseInt(line.replace(/^Level:\s*/i, ''), 10) || 100;
+        } else if (/^Shiny:\s*Yes/i.test(line)) {
+          shiny = true;
+        } else if (/^EVs:/i.test(line)) {
+          const parts = line.replace(/^EVs:\s*/i, '').split('/');
+          parts.forEach(p => {
+            const m = p.trim().match(/^(\d+)\s+([A-Za-z]+)$/);
+            if (m) {
+              const val = parseInt(m[1], 10) || 0;
+              const k = m[2].toLowerCase();
+              if (statMap[k] !== undefined) evs[statMap[k]] = val;
+            }
+          });
+        } else if (/^IVs:/i.test(line)) {
+          const parts = line.replace(/^IVs:\s*/i, '').split('/');
+          parts.forEach(p => {
+            const m = p.trim().match(/^(\d+)\s+([A-Za-z]+)$/);
+            if (m) {
+              const val = parseInt(m[1], 10) || 0;
+              const k = m[2].toLowerCase();
+              if (statMap[k] !== undefined) ivs[statMap[k]] = val;
+            }
+          });
+        } else if (/Nature$/i.test(line)) {
+          const natName = line.replace(/\s*Nature$/i, '').trim();
+          const nIdx = PKX.NATURES.findIndex(n => PKX.norm(n.en) === PKX.norm(natName) || PKX.norm(n.name) === PKX.norm(natName));
+          if (nIdx >= 0) nature = nIdx;
+        } else if (line.startsWith('-')) {
+          const moveName = line.replace(/^-\s*/, '').trim();
+          if (window.MOVES) {
+            const mId = Object.keys(window.MOVES).find(id => {
+              const mv = window.MOVES[id];
+              return PKX.norm(mv.n) === PKX.norm(moveName);
+            });
+            if (mId && moves.length < 4) moves.push(mId);
+          }
+        }
+      }
+
+      members.push({
+        uid: foundPkm.uid,
+        level: Math.max(1, Math.min(100, level)),
+        item: item,
+        ability: ability,
+        nature: nature,
+        moves: moves,
+        evs: evs,
+        ivs: ivs,
+        shiny: shiny
+      });
+    }
+
+    if (!members.length) {
+      PKX.toast('No se reconocieron Pokémon en el texto ingresado');
+      return null;
+    }
+
+    if (newTeamName) {
+      const newTeam = {
+        id: 'team_' + Date.now(),
+        name: newTeamName.trim() || 'Equipo Importado',
+        members: members
+      };
+      PKX.state.teams.push(newTeam);
+      PKX.state.activeTeamId = newTeam.id;
+    } else {
+      const active = PKX.getActiveTeam();
+      if (active) active.members = members;
+    }
+
+    PKX.saveTeams();
+    PKX.toast(`¡Equipo importado (${members.length}/6 Pokémon)!`);
+    return members;
   };
 
   // ==========================================
